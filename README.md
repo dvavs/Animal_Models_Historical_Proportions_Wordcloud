@@ -4,3 +4,105 @@ The data, process, and final wordlcoud images from an investigation of changes i
 Used in the following publication:
 
 Lambert, K. G., Kent, M. H., & Vavra, D. T. (2019). Avoiding Beach’s Boojum effect: Enhancing bench to bedside translation with field to laboratory considerations in optimal animal models. *Neuroscience & Biobehavioral Reviews*. https://doi.org/10.1016/j.neubiorev.2019.06.034
+
+For convenience, here are the contents of the project's R Markdown file:
+
+---
+
+```
+---
+title: "Animal Model Lit Search Word Cloud - Supplement"
+author: "Kelly G. Lambert, Molly H. Kent, & Dylan T. Vavra"
+date: "4/25/2019"
+output: html_document
+---
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Background
+
+This Markdown document contains the code used to produce the word cloud included in Lambert, Kent, & Vavra, 2019. The word cloud represents the 100 most frequent words appearing in titles of sources from all combined literature searches conducted for this publication. Behavioral neuroscience animal models involving 19 species were examined through these literature searches.
+
+This word cloud was generated using a tutorial found on the Analytics Training blog, authored by Abhirami Sankar. The tutorial can be found [here](https://analyticstraining.com/how-to-create-a-word-cloud-in-r/).
+
+
+### Packages
+
+Creating these word clouds requires the use of three packages: tm, wordcloud, and RColorBrewer. The first step to creating the word clouds is to install the packages.
+
+```{r install packages, eval=FALSE}
+install.packages("tm", repos = 'https://cran.rstudio.com/')
+install.packages("wordcloud", repos = 'https://cran.rstudio.com/')
+install.packages("RColorBrewer", repos = 'https://cran.rstudio.com/')
+```
+
+Next, the packages must be loaded in.
+
+```{r load packages}
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+```
+
+### Data Preparation
+
+The data for these wordclouds - titles of publications fitting our search parameters from both 1988 and 2017 - were first compiled in an excel spreadsheet. These data were transformed in excel to exclude words that were not informative about the subject of a paper (e.g., "a","it","the""). This transformation can be done in R as well, but was completed prior to that stage in this project. Data for each year was then saved into an UTF-8 .txt file.
+
+First, the text files must be read into R. This requires specifying a filepath for the relevant .txt files, so anyone seeking reproduce this word cloud procedure should replace the filepath in the code below with one relevant to that user's system.
+
+```{r data pulling 88, warning=FALSE}
+words88 = "/Users/dv2aj/Documents/Lambert/Animal\ Use\ Lit\ Search/Word\ Cloud/WordCloud1988.txt"
+w88_txt = readLines(words88)
+```
+
+```{r data pulling 17, warning=FALSE}
+words17 = "/Users/dv2aj/Documents/Lambert/Animal\ Use\ Lit\ Search/Word\ Cloud/WordCloud2017.txt"
+w17_txt = readLines(words17)
+```
+
+Next, the text files must each be turned into a corpus, which is the format required by the tm package (which can be used to clean the data, including word exclusion as performed in excel for this project).
+
+```{r corpus creation}
+w88<-Corpus(VectorSource(w88_txt))
+w17<-Corpus(VectorSource(w17_txt))
+```
+
+Finally, the data must be cleaned to include only the most informative text for the word clouds. This involves using the tm package to remove extra spacing between words, changing everything to the same (lower) case, removing numbers, removing punctuation, and limiting the data to only words recognized from the English language.
+
+
+```{r clean 88 data, warning=FALSE}
+w88_data<-tm_map(w88,stripWhitespace)
+w88_data<-tm_map(w88_data,tolower)
+w88_data<-tm_map(w88_data,removeNumbers)
+w88_data<-tm_map(w88_data,removePunctuation)
+w88_data<-tm_map(w88_data,removeWords,stopwords("english"))
+```
+
+```{r clean 17 data, warning=FALSE}
+w17_data<-tm_map(w17,stripWhitespace)
+w17_data<-tm_map(w17_data,tolower)
+w17_data<-tm_map(w17_data,removeNumbers)
+w17_data<-tm_map(w17_data,removePunctuation)
+w17_data<-tm_map(w17_data,removeWords,stopwords("english"))
+```
+
+
+### Creating Word Clouds
+
+The final step in the process is the code to create the word clouds themselves.
+
+#### 1988
+
+```{r 1988 cloud}
+wordcloud(w88_data, scale = c(6,0.6), max.words = 100, random.order = FALSE, rot.per = 0.35, use.r.layout = FALSE, colors = brewer.pal(3,"Dark2"))
+```
+
+#### 2017
+
+```{r 2017 cloud}
+wordcloud(w17_data, scale = c(4,0.4), max.words = 100, random.order = FALSE, rot.per = 0.35, use.r.layout = FALSE, colors = brewer.pal(3,"Dark2"))
+```
+
